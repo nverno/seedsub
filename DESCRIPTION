@@ -1,0 +1,12 @@
+Package: seedsub
+Title: Contains seedling/substrate data from Mt Moosilauke
+Version: 0.0.0.9000
+Authors@R: "Noah Peart <noah.v.peart@gmail.com> [aut,cre]"
+Description: Contains the seedling and substrate data from Mt. Moosilauke.
+Depends:
+    R (>= 3.2.3)
+License: GPL-3
+LazyData: true
+Imports:
+    data.table
+RoxygenNote: 5.0.1
