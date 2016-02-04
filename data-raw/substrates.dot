@@ -1,0 +1,36 @@
+
+digraph substrates {
+	# 'graph'
+	graph [overlap = true, fontsize = 10]
+
+	# 'node' statements
+	node [shape = box, color = blue,
+	      fixedsize = true, type = box, fontname = Helvetica]
+	BSOIL;
+	LITC;
+	LITD;
+	LITM;
+	LITT;
+	MSS;
+	RCK;
+	WDG1;
+	WDG5;
+
+	node [shape = circle, color = red, width=0.9]
+	BSOIL;
+	LITT;
+	RCK;
+	TIP;
+	WDG1;
+	WDG5;
+	BLA5;
+
+	# 'edge' statements
+	edge [color = green, rel = yeilds]
+	MSS->LITT MSS->WDG1 MSS->BSOIL MSS->TIP MSS->BLA5 MSS->WDG5 MSS->RCK
+	BSOIL->RCK 
+	LITC->RCK LITC->TIP LITC->BLA5
+	LITM->BLA5 LITM->TIP LITM->RCK LITM->WDG5
+	LITD->WDG5 LITD->RCK
+	
+}
