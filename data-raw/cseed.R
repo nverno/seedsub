@@ -3,7 +3,7 @@
 ## Description: Cleaning contour seedling data, seesapmas11, to make cseed
 ## Author: Noah Peart
 ## Created: Tue Feb  2 17:07:06 2016 (-0500)
-## Last-Updated: Wed Feb  3 22:51:07 2016 (-0500)
+## Last-Updated: Fri Feb  5 16:19:11 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -207,6 +207,9 @@ cextgr <- cseed[, ecols, with=FALSE]
 ##' **Extension growth columns**:
 {{prettify(ecols)}}
 ##'
+##'
+##' For actually, cleaning of the ext. growth data see [cextgr_clean.R](cextgr_clean.R).  
+##' 
 ##' --------------------------------
 ##'
 ##' ## Remove columns
