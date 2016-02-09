@@ -3,7 +3,7 @@
 ## Description: 
 ## Author: Noah Peart
 ## Created: Wed Feb  3 16:58:59 2016 (-0500)
-## Last-Updated: Wed Feb  3 18:52:05 2016 (-0500)
+## Last-Updated: Mon Feb  8 22:43:06 2016 (-0500)
 ##           By: Noah Peart
 ######################################################################
 ##' Make nice for markdown
@@ -27,7 +27,8 @@ prettify <- function(x, type=c('each', 'all')) {
 ##' @export
 see <- function(file, format) {
   if (!file.exists(file)) stop('Cant find file')
-  out <- if (missing(format)) rmarkdown::render(file)
-  else rmarkdown::render(file, output_format=format)
+  out <- if (missing(format)) {
+    rmarkdown::render(file)
+  } else rmarkdown::render(file, output_format=format)
   browseURL(out)
 }
