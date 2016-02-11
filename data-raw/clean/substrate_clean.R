@@ -3,7 +3,7 @@
 ## Description: Cleaning submas99c
 ## Author: Noah Peart
 ## Created: Sat Feb  6 21:53:42 2016 (-0500)
-## Last-Updated: Mon Feb  8 17:36:48 2016 (-0500)
+## Last-Updated: Wed Feb 10 19:19:23 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -12,6 +12,8 @@
 ##' title: "Substrate Cleaning"
 ##' output_format: 
 ##'   html_document:
+##'     theme: readable
+##'     highlight: zenburn
 ##'     toc: true
 ##' ---
 ##' 
@@ -31,7 +33,7 @@ csub <- copy(submas99c)
 
 ## /* end setup */
 ##'
-##' The goal of this script is to clean and explore (minorly) the substrate master
+##' The goal of this script is to clean and explore (a little) the substrate master
 ##' named `submas99c`.  This file can be loaded from `library(seedsub.mas)`.
 ##' 
 ##' ## Columns:

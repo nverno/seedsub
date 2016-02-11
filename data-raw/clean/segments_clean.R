@@ -1,9 +1,9 @@
-## /* cseed.R --- 
-## Filename: cseed.R
-## Description: Cleaning contour seedling data, seesapmas11, to make cseed
+## /* segments_clean.R --- 
+## Filename: segments_clean.R
+## Description: Cleaning contour seedling data, seesapmas11
 ## Author: Noah Peart
 ## Created: Tue Feb  2 17:07:06 2016 (-0500)
-## Last-Updated: Fri Feb  5 16:19:11 2016 (-0500)
+## Last-Updated: Wed Feb 10 22:51:12 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -14,7 +14,11 @@
 ##' date: "`r Sys.Date()`"
 ##' output_format: 
 ##'   html_document:
+##'     theme: journal
+##'     highlight: zenburn
 ##'     toc: true
+##'     toc_float:
+##'       smooth_scroll: true
 ##' ---
 ##'
 ##+setup, include=FALSE, echo=FALSE
@@ -216,11 +220,12 @@ cextgr <- cseed[, ecols, with=FALSE]
 ##' - Remove ext. growth columns (save the `ID`)
 ##' - `SEG88` is redundant, `YRTAG == 88` is the same information.
 ##' - `CLASS` is all 'S' (segment) so removing.
+##' - `TREE` is just derived from height (in year of tagging) to determine sapling/seedling
 ##' - Removing unknown columns: `CODE98`, `FLAG`
 ##'
 ##+remove-cols
 cseed[, setdiff(ecols, 'ID') := NULL, with=FALSE]
-others <- c('SEG88', 'CLASS', 'CODE98', 'FLAG')
+others <- c('SEG88', 'CLASS', 'CODE98', 'FLAG', 'TREE')
 cseed[, others := NULL, with=FALSE]
 ## /* end remove-cols */
 ##'
@@ -268,7 +273,10 @@ cseed[, SGDSP9899 := NULL]
 ##'
 ##' Gonna do a bunch of melting separately and join back together
 ##' since the years are different for all the variables and we want a single 
-##' resulting `YEAR` column.
+##' resulting `YEAR` column.  Also, adding a unique plot identifier columns, `PID`,
+##' for convenience, and to link the plot-level variables to individual-level variables
+##' when the data is separated by this distinction.
+##'
 ##+melt-vars
 ids <- c('ID')  # melt with these ids
 jids <- c(ids, 'YEAR')  # join back with these ids
@@ -276,7 +284,7 @@ jids <- c(ids, 'YEAR')  # join back with these ids
 ## Constants
 consts <- c(ids, 'CONTNAM', 'STPACE', 'SPEC', 'ALONG', 'DISUPDN', 'YRTAG', 
   'TAG', 'YRMORT', 'ASPCL', 'ELEVCL', 'HRB1', 'HRB2', 'HRB3', 'PALONG', 
-  'TREE', 'SDSP1', 'DSDSP1', 'NSDSP1', 'SDSP2', 'DSDSP2', 'NSDSP2', 'CHECK', 
+  'SDSP1', 'DSDSP1', 'NSDSP1', 'SDSP2', 'DSDSP2', 'NSDSP2', 'CHECK', 
   scols)
 
 ## varying
@@ -341,11 +349,14 @@ for (v in allvary) {
 }
 
 ## Add constants
-res <- (cseed[, consts, with=FALSE][res, on=ids])
+res <- cseed[, consts, with=FALSE][res, on=ids]
+
+## Add a unique plot identifier
+res[,PID := .GRP, by=c('CONTNAM', 'STPACE')]
 
 ## Put some of the columns up front, soil cols at the back
 coln <- c(  # these will go up front for visual convenience
-  'ID', 'CONTNAM', 'STPACE', 'SPEC', 'HT', 'SUB', 'SUBON', 'YEAR', 
+  'PID', 'ID', 'CONTNAM', 'STPACE', 'SPEC', 'HT', 'SUB', 'SUBON', 'YEAR', 
   'YRTAG', 'ALONG', 'DISUPDN', 'YRMORT', 'STAT', 'DECM', 'ELEVCL', 
   'ASPCL', 'TAG'
 )
@@ -357,6 +368,7 @@ setcolorder(res, ord)
 res[, YEAR := paste0(ifelse(YEAR %in% c('00', '11'), '20', '19'), YEAR)]
 res[, YEAR := as.integer(YEAR)]
 resDims <- dim(res)
+
 ## /* end melting */
 ##'
 
@@ -384,10 +396,6 @@ res[, intCols := lapply(.SD, as.integer),
 dims <- dim(res)
 restab <- datatable(head(res, 200), options=dtopts)
 
-## If saving
-## cseed <- res
-## save(cseed, file='temp/cseed.rda', compress='bzip2')
-
 ## /* end results */
 ##' ----------------------
 ##'
@@ -405,3 +413,27 @@ restab <- datatable(head(res, 200), options=dtopts)
 ##' See `cseed_summary.R` for some summaries of the data
 ##'
 
+##'
+##' ## Save
+##'
+##' Saving the whole dataset as **segments**.  Also, saving two data tables where
+##' the columns that are constant across plots are separated from those that vary,
+##' `PID` relating the two.  These will be called **segplants** (individual-level) and 
+##' **segplots** (plot-level).
+##+save
+
+## All segment data bundled
+segdata <- res
+
+## Plot-level variables to separate out
+consts <- c('PID', 'CONTNAM', 'STPACE', 'ELEVCL', 'ASPCL', scols)
+
+segplots <- segall[, consts, with=FALSE]
+segplants <- segall[, c('PID', setdiff(names(segall), consts)), with=FALSE]
+
+## If saving
+## save(segdata, file='../temp/segdata.rda', compress='bzip2')
+## save(segplots, file='../temp/segplots.rda', compress='bzip2')
+## save(segplants, file='../temp/segplants.rda', compress='bzip2')
+
+## /* end save */

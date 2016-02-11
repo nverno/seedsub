@@ -1,0 +1,20 @@
+#+OPTIONS: ^:nil
+
+Scripts to clean/transform segment data master files.  These files contain data
+for seedlings/saplings and substrate collected along the contours.
+
+#+CAPTION: Description of files
+| Name              | Data Target | Creates                                              | Description                              |
+|-------------------+-------------+------------------------------------------------------+------------------------------------------|
+| segments_clean.R  | seesapmas11 | segdata.rda, cextgr.rda, segplots.rda, segplants.rda | transforms to long/separates ext. growth |
+| cextgr_clean.R    | cextgr.rda  | extgr.rda                                            | transforms to long/cleans ext. growth    |
+| substrate_clean.R | submas99c   | segsub.rda                                           | ???                                      |
+
+@@html:<br><br>@@
+
+#+CAPTION: Status of files
+| Name              | Status                                                  | Needs                                      |
+|-------------------+---------------------------------------------------------+--------------------------------------------|
+| segments_clean.R  | @@html:<font color="green">@@\checkmark@@html:</font>@@ | -                                          |
+| cextgr_clean.R    | @@html:<font color="orange">Almost Done</font>@@        | Separate the summary, finish the transform |
+| substrate_clean.R | @@html:<font color="red">Starting</font>@@              | Calculate proportions/transform            |

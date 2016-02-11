@@ -1,0 +1,25 @@
+#+OPTIONS: ^:nil
+
+Some files to summarise the segment, extension growth, and substrate data.  The =.R= files
+can be compiled using =knitr::spin= to HTML.  The =.dot= files require graphviz or 
+some program that is capable of creating =.png= files from =.dot= files.
+
+#+CAPTION: Files
+| Name              | Data Target | Description                                 |
+|-------------------+-------------+---------------------------------------------|
+| segdata_summary.R | segdata.rda | Summarise the seedling/sapling segment data |
+| substrates.dot    |             | DOT file to create substrate flowchart      |
+| extgr_summary.R   | extgr.rda   | Summarise the extension growth data         |
+| segsub_summary.R  | segsub.rda  | Summarise the substrate data                |
+
+
+
+@@html:<br>@@
+
+#+CAPTION: Status
+| Name              | Status                                                  | Needs                                                     |
+|-------------------+---------------------------------------------------------+-----------------------------------------------------------|
+| segdata_summary.R | @@html:<font color="orange">Almost done</font>@@        | Fix the sankeys, dot.exe instructions, igraph, visNetwork |
+| substrates.dot    | @@html:<font color="green">@@\checkmark@@html:</font>@@ |                                                           |
+| extgr_summary.R   | @@html:<font color="red">Missing</font>@@               | To be separated from cextgr_clean.R                       |
+| segsub_summary.R  | @@html:<font color="red">Missing</font>@@               | To finish cleaning substrate data first.                  |

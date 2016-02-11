@@ -1,26 +1,28 @@
-## /* cseed_summary.R --- 
-## Filename: cseed_summary.R
-## Description: 
+## /* segdata_summary.R --- 
+## Filename: segdata_summary.R
+## Description: Summarise the segdata output from segments_clean.R
 ## Author: Noah Peart
 ## Created: Wed Feb  3 22:46:27 2016 (-0500)
-## Last-Updated: Thu Feb  4 20:26:32 2016 (-0500)
+## Last-Updated: Wed Feb 10 19:19:49 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
 ## /* yaml */
 ##' ---
-##' title: "Some Basic Summaries for the __cseed__ Dataset"
+##' title: "Some Basic Summaries for the __segdata__ Dataset"
 ##' author: "Noah Peart"
 ##' date: "`r Sys.Date()`"
 ##' output_format: 
 ##'   html_document:
+##'     theme: readable
 ##'     toc: true
+##'     highlight: zenburn
 ##' ---
 ##'
 ##+setup, include=FALSE, echo=FALSE, message=FALSE
 ## /* knitr setup */
 library(knitr)
-opts_chunk$set(fig.path='figures/', cache=FALSE, echo=FALSE, message=FALSE)
+opts_chunk$set(fig.path='figures/', cache=FALSE, echo=TRUE, message=FALSE)
 
 library(data.table)
 library(DT)
@@ -28,13 +30,13 @@ library(igraph)
 library(networkD3)
 library(treemap)
 
-source('utils.R')             # prettify, see
-load('temp/cseed.rda')        # data
-dat <- copy(cseed)
-dtopts <- list(scrollX=TRUE)  # DT options
+source('../clean/utils.R')                   # prettify, see
+load('../temp/segdata.rda')                  # data
+dat <- copy(segdata)
+dtopts <- list(scrollX=TRUE)                 # DT options
 ## /* end load-stuff */
 
-##' This document contains some basic summaries of the dataset 'cseed' 
+##' This document contains some basic summaries of the dataset 'segdata' 
 ##' created from the seesapmas11 master file.  It will attempt to present some 
 ##' helpful summary figures/tables pertaining to seedlings/saplings and substrates
 ##' sampled around the contours, as well as experimenting with some tree-like
@@ -118,7 +120,7 @@ datatable(subyrs, options=dtopts,
 ##' substrate.  The boxes are colored blue if that substrate is found as an overlying
 ##' substrate, and red if they are only found as underlying (ie. `BLA5`).
 ##'
-##' ![alt text](temp/substrates.png)
+##' ![alt text](figures/substrates.png)
 ##+sub-flow
 ## Make a graphviz flowchart using dot.exe
 ## if (nzchar(Sys.which('dot'))) {}
@@ -188,12 +190,9 @@ links <- data.frame(
 sankeyNetwork(Links=links, Nodes=nodes, Source='source', Target='target',
   Value='value', NodeID='name', units='Seedlings', fontSize=20, nodeWidth=30)
 
-
-
 ## Trim down the nodes to only those in links
 vals <- unique(unlist(links[1:2]))  # these nodes are either source/target
 nodes[!seq.int(nrow(nodes)) %in% (vals+1L), 'name'] <- NA_character_
-
 
 ## contour sample counts
 conts <- dat[!is.na(HT) & !is.na(SUB), .(Total=.N), by=CONTNAM]
