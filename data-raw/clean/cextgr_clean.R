@@ -3,7 +3,7 @@
 ## Description: Clean extension growth data
 ## Author: Noah Peart
 ## Created: Fri Feb  5 16:13:50 2016 (-0500)
-## Last-Updated: Sat Feb  6 00:24:35 2016 (-0500)
+## Last-Updated: Thu Feb 11 23:57:49 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -12,6 +12,8 @@
 ##' title: "Extension Growth"
 ##' output_format: 
 ##'   html_document:
+##'     theme: readable
+##'     highlight: zenburn
 ##'     toc: true
 ##' ---
 ##' 
