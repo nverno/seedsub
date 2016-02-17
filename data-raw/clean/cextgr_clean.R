@@ -3,13 +3,13 @@
 ## Description: Clean extension growth data
 ## Author: Noah Peart
 ## Created: Fri Feb  5 16:13:50 2016 (-0500)
-## Last-Updated: Thu Feb 11 23:57:49 2016 (-0500)
+## Last-Updated: Wed Feb 17 05:52:57 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
 ## /* yaml */
 ##' ---
-##' title: "Extension Growth"
+##' title: "Clean Extension Growth"
 ##' output_format: 
 ##'   html_document:
 ##'     theme: readable
@@ -19,43 +19,25 @@
 ##' 
 ##+setup, include=FALSE, message=FALSE, echo=FALSE
 library(knitr)
-opts_chunk$set(fig.path='Figures/', cache=FALSE, echo=TRUE, message=FALSE)
+opts_chunk$set(cache=FALSE, echo=TRUE, message=FALSE)
 
 library(data.table)
 library(stringi)
-source('utils.R')
-
-## Optional:
-has_dt <- require(DT)
-has_dyg <- require(dygraphs)
-has_xtab <- require(xtable)
-
-dtopts <- list(scrollX=TRUE)
 ## /* end setup */
 ##'
-##+load-data
+##+load-data, echo=FALSE
 ## Loading data, extract some variables/years
-load('temp/cextgr.rda')
+load('../temp/cextgr.rda')
 
 ## Describe these variables
 nms <- unique(stri_extract_first(names(cextgr), regex="[A-Z]+[0-9]?[A-Z]+"))
-
-## Ext. growth years, convert to a range format
-yrs <- stri_extract_last(names(cextgr)[
-  stri_detect(names(cextgr), regex='^EX[0-9]+')], regex='[0-9]+')
-yrs <- sort(as.numeric(yrs))
-extyrs <- sprintf('[%s]', 
-  sub('([0-9]+):([0-9]+)', '19\\1 - 19\\2', deparse(as.integer(yrs))))
-
-## Terminal conditions
-term00 <- cextgr[!is.na(TERM00), unique(TERM00)]
-term99 <- cextgr[!is.na(TERM99), unique(TERM99)]
 
 ## Column groups
 nms <- names(cextgr)
 patts <- list(                        # patterns to match groups
   id      = '^ID$',
-  consts  = '^AGE88$|^YRREX$',        # won't melt these by year
+  consts  = '^YRREX$',                # won't melt these by year
+  age     = '^AGE88$',                # total age, only measured in 1988
   minages = '^MINAGE[0-9]+',
   pexs    = '^PEX[0-9]+', 
   exs     = '^EX[0-9]+',
@@ -64,106 +46,134 @@ patts <- list(                        # patterns to match groups
   d2rms   = '^D2RM[0-9]+',
   enotes  = '^ENOTE[0-9]+',
   nl99s   = '^NL99_[1-3]',
-  others  = '^EX(?:CNT|SUM)[0-9]+'    # probably gonna ignore these
+  excnts  = '^EXCNT[0-9]+',
+  exsums  = '^EXSUM[0-9]+'
 )
+## others  = '^EX(?:CNT|SUM)[0-9]+'    # probably gonna ignore these
+
 
 allCols <- lapply(patts, grep, nms, perl=TRUE, value=TRUE)
 if (!all(nms %in% unlist(allCols))) stop( 'Missed some columns.' )
+
+## Columns that will remain constant across years
+consts <- with(allCols, c(id, consts))
+
 ## /* end load-data */
 ##'
-
+##' # Primary Goals
+##'
 ##' The goal of this script is to clean the extension growth data extracted from 
-##' __seesapmas11__ file in [cseed.R](cseed.R).  This involves mostly transforming the
-##' data into a ussable 'long' format.  The temporary dataset `cextgr.rda` should
-##' have been saved in `./temp/cextgr.rda` following execution of `cseed.R`.
+##' __seesapmas11__ file in [segments_clean.R](segments_clean.R).
+##' This involves mostly transforming the data into a useable 'long' format.  
+##' The temporary dataset `cextgr.rda` should have been saved in `../temp/cextgr.rda` 
+##' following execution of `segments_clean.R`.
+##' See [ext_growth.R](../summaries/ext_growth.R) for summaries of the transforming.
 ##'
-##' ## Table: Head of raw data
-##+raw-table
-if (has_dt) {
-  datatable(head(cextgr), options=dtopts)
-} else kable(head(cextgr))
-## /* end raw-table */
+##' # Columns
 ##'
-##' ## Columns descriptions
+##' **Constants**: {
+{{prettify(consts)}}
+##' }.  Note that `YRREX` is the year calculated by Lixi after which we can safely assume the 
+##' extension growth is accurate (taking into account the problems with browsing/broken/etc.
+##' leaders).  `ID` is the key to link with plants in segplants data (unique plants).
+##' 
+##' **Columns to transform**:
 ##'
-##' + `ID`: Unique id linking extension growth back to `cseed` dataset.
-##' + `AGE88`: Total age for 1988 seedlings.  Cases where `AGE88` was double-checked:
-##'     - __== 1__: left alone
-##'     - __Missing__: left alone
-##'     - __<= number of EXs__: If __less__, set to __missing__, if __equal__ it was 
-##' left alone
-##' + `MINAGE`: Minimum age for tagged seedlings.  This variable was checked the same
-##' as `AGE88`.  Measured in 1988, 1989, 1998, and 1999.
-##' + `PEX`: Partial growth columns, ie they only include part of years growth.  Measured
-##' in 1989, 1998, and 1999.
-##' + `EX`: Extension growth collected for years:
-{{extyrs}}
-##' .  However, protocols for different collection years (1988, 1989, 1998, 199) differed.
-##'     - __1988__: For seedlings/saplings, max __10 years__ measured (ie. 1978-1987). 
-##'     - __1989__: For seedlings, __no limit__ to number of measurements.  For saplings,
-##' it was measured for as many years as possible for the __first__ sapling of each species
-##' encountered.  The __second__ and __third__ sapling of each species in each segment
-##' has only up to __10 yrs__ of ext. growth measured.
-##'     - __1998__: For seedlings, __no limit__ to number of measurements.  For saplings, 
-##' max __10 years__.
-##'     - __1999__: For seedlings, max __11 years__ measured.  For saplings, max __11 years__.
-##' + [`ENOTE`](#enote): These were notes related to extension growths. 
-##' These values were used to make some corrections to `EX`, documented extensively in 
-##' _Segment Data History 1988-2012.docx_.  Possible values are enumerated as follows:
-##'     - __1__: New leader
-##'     - __2__: Browse off, no extension growth
-##'     - __3__: Not browsed, just no growth.
-##'     - __4__: Dead top.
-##'     - __5__: No dominant leader.
-##' + [`ENOTE99`](#enote99): Different than the other `ENOTE` columns, 
-##' this one is a character column containing up to three years in the past when a 
-##' lateral became a new leader.
-##' + `NL_[1-3]`: Variables derived from `ENOTE99`.  They refer to the first, second, and
-##' third years when there was a new leader for 1999 tagged plants.
-##' + `EXSUM`: Sum of `EX` measured (derived).
-##' + `EXCNT`: Number of `EX` measured (derived).
-##' + `YRREX`: A new variable indicating the year until which the `EX` data are reliable.
-##' This would be the last year a new leader came out or a top was browsed off; for other 
-##' plants, this is the earliest year an `EX` was estimated.
-##' + [`TERM`](#terminal-conditions): Terminal leader condition, recorded in 1999 and 2000.  
-##' However, the values for each year are recorded differently:
-##'     - __1999__: Mostly documented
-##'         - __HE__: Healthy
-##'         - __UN__: Unhealthy
-##'         - __IN__: Insects
-##'         - __ND__: No dominant leader
-##'         - __NG__: No growth
-##'         - __DE__: Dead top
-##'         - __BRS__: Browsed off
-##'         - __BR__: Browsed off (? documented as being changed to `BRS`)
-##'         - __BK__: Broken
-##'         - __DEFOLIAT__: Defoliated
-##'         - __LITTLE F__: Little foliage?
-##'         - __CANT ASS__: Can't access (or assess?)
-##'         - __TREE LAY__: ?
-##'         - __1__: ?
-##'     - __2000__: Can't find documentation, but they seem to straightforward.
-##'         - __HE__: Healthy (1)
-##'         - __H__: Healthy? (68)
-##'         - __BR__: Browsed (1)
-##'         - __NEW DOM__: New dominant leader (2)
-##'         - __NO DOM/BR__: No dominant leader/browsed (1)
-##'         - __NO DOM__: No dominant leader (9)
-##'         - __NG__: No growth (5)
-##' + `D1RM`: Distance remaining from the last positively identified extension
-##' growth measurement to the root collar for ABBA/PIRU seedlings (note on years where
-##' a limited number of measurements were taken, this would be the distance remaining
-##' from the last measurement point).  Collected in 1998/1999.
-##' + `D2RM`: Distance remaining after counting the minimal age for ABBA/PIRU.  Collected
-##' for __saplings only__ in 1998, and for __seedlings and saplings__ in 1999.
+##'   + `ENOTE[0-98]`: All of these except for `ENOTE99` go to long.  `ENOTE99` has different
+##' info that has already been split up into the `NL` columns (new leaders)
+##'   + `AGE88`: Total age (88)
+##'   + `MINAGE[0-9]+`: Minimum ages (88, 89, 98, 99).
+##'   + `EX[0-9]+`: The main target, the extension growths (44-98).
+##'   + `PEX[0-9]+`: Partial extension growths (89, 98, 99).
+##'   + `TERM[0-9]+`: Terminal conditions (99, 00)
+##'   + `D[1-2]RM[0-9]+`: Distance remaining (98, 99)
+##'   + `NL99_[1-3]`: Years of new leaders, up to 3, only measured in 99.
 ##'
+##' **Remove**:
 ##'
-##' ### ENOTE
-##' `ENOTE[77-89]` are coded 1:5.  `ENOTE99` was separated into `NL99_[1-3]` columns.
-##' Below, the `ENOTE[77-89]` variables are shown as counts of each value/year 
-##' in tabular form (summarized as heatmap - hover over cell for value).
+##'   + `ENOTE99`: This information is split between `NL` columns.
+##'   + `EXCNT`: Count of extension growths (88, 98, 99).
+##'   + `EXSUM`: Sum of extension growths (98, 99).
+##' 
+##' # Transform
 ##'
-##+enotes
+##' Going to transform each variable separately and merge back together, since the 
+##' years to melt by vary amongst all the variables and I cant think of a better way.
+##'
+##' Some of the variables require special treatment: 
+##'
+##'   + `NL_`, the names need to be stripped of 99 and then merged only for 99.
+##'   + `PEX` variables need to merged with `EX` and an indicator column used for 
+##' partial growth instead.  Check for conflicts where we have both partial and full
+##' extension measurements.
+##' 
+##+transform, echo=FALSE
+## Melt EX first, then join each additional melted variable to it
+id <- allCols$id
+res <- melt(cextgr[, c(id, allCols$exs), with=FALSE], id.vars=id,
+  na.rm=TRUE, value.name="EX", measure.vars=allCols$exs,
+  variable.name="YEAR")
+res[, YEAR := stri_extract(YEAR, regex='[0-9]+')]
+
+## We have extension growth measure at least once in all years in the range
+## 1944 - 1998:
+tst <- all(diff(as.numeric(rownames(table(res$YEAR)))) == 1L)
+
+## Check that `PEX` doesn't overlap with `EX` variables
+exs <- substr(allCols$pexs, 2, nchar(allCols$pexs))
+inds <- exs %in% names(cextgr)
+exs <- exs[inds]  # dont check where EX doesn't exist
+pexs <- allCols$pexs[inds]
+tst <- lapply(seq_along(exs), function(i) {
+  cextgr[!is.na(get(exs[[i]])) & !is.na(get(pexs[[i]])), .N]
+})
+stopifnot(all(unlist(tst) == 0))
+
+## Merge PEXs with EXs and add an indicator variable `PEX`
+pexs <- cextgr[, allCols$pexs, with=FALSE]
+
+## list of easy varying variables (remove ENOTE99)
+allvary <- allCols[c("age", "minages", "terms", "d1rms", "d2rms", "enotes",
+  "excnts", "exsums")]
+allvary$enotes <- setdiff(allvary$enotes, "ENOTE99")
+
+## For each element, melt by those variables, clean the year column,
+## and join back to `res`
+yrs <- unique(res$YEAR)
+for (v in allvary) {
+  coln <- stri_extract(v[[1]], regex='^[A-Z]+[1-2]?[A-Z]+', mode='first')
+  tmp <- melt(cextgr[, c(id, v), with=FALSE],
+    id.vars=id, na.rm=TRUE, value.name=coln, measure.vars=v,
+    variable.name='YEAR')
+  tmp[, YEAR := stri_replace_first_fixed(YEAR, coln, '')]
+  res <- if (all(unique(tmp$YEAR) %in% yrs)) {
+    tmp[res, on=c(id, 'YEAR')]                     # simple join on ID and YEAR
+  } else {
+tst <- merge(res, tmp, by=c(id, 'YEAR'), all=TRUE)  # blank rows / new years
+  }
+}
+
+## Add constants
+res <- cseed[, consts, with=FALSE][res, on=ids]
+
+## Add a unique plot identifier
+res[,PID := .GRP, by=c('CONTNAM', 'STPACE')]
+
+## Put some of the columns up front, soil cols at the back
+coln <- c(  # these will go up front for visual convenience
+  'PID', 'ID', 'CONTNAM', 'STPACE', 'SPEC', 'HT', 'SUB', 'SUBON', 'YEAR', 
+  'YRTAG', 'ALONG', 'DISUPDN', 'YRMORT', 'STAT', 'DECM', 'ELEVCL', 
+  'ASPCL', 'TAG'
+)
+midcols <- sort(setdiff(names(res), c(coln, scols)))
+ord <- c(coln, midcols, sort(scols))  # soil columns in the back
+setcolorder(res, ord)
+
+## Convert year column to full years (not abbreviations) and to integers
+res[, YEAR := paste0(ifelse(YEAR %in% c('00', '11'), '20', '19'), YEAR)]
+res[, YEAR := as.integer(YEAR)]
+resDims <- dim(res)
+
 ## Note: ENOTE99 is character, the rest are doubles
 ids <- allCols$enotes
 ids <- setdiff(ids, 'ENOTE99')
@@ -265,3 +275,5 @@ kable(tab, caption='Table: TERM labels by collection year.')
 
 ## /* end term */
 ##'
+input <- list(temp='system2("echo", "Nice...")')
+commandString <- paste0("qplot(", input$temp, ", data=., geom='density')")

@@ -3,7 +3,7 @@
 ## Description: Cleaning contour seedling data, seesapmas11
 ## Author: Noah Peart
 ## Created: Tue Feb  2 17:07:06 2016 (-0500)
-## Last-Updated: Wed Feb 10 22:51:12 2016 (-0500)
+## Last-Updated: Wed Feb 17 03:33:08 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -321,7 +321,10 @@ if (!checkcols) stop(sprintf('Missed some columns: %s',
 {{prettify(allvary)}}
 ##'
 ##' The main constraint on the output is that there should be no NA values
-##' for the `HT` column.
+##' for the `HT` column.  **Actually** this isn't true, because of the 2000 measurements
+##' which were only on status and didn't involve heights at all.  Is there a better way
+##' to handle this -- it leads to a bloating of the data.
+##'
 ##+melting
 ## Melt HT first, then join each additional to it
 res <- melt(cseed[, c(ids, hts), with=FALSE],
