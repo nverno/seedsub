@@ -3,7 +3,7 @@
 ## Description: Cleaning contour seedling data, seesapmas11
 ## Author: Noah Peart
 ## Created: Tue Feb  2 17:07:06 2016 (-0500)
-## Last-Updated: Wed Feb 17 03:33:08 2016 (-0500)
+## Last-Updated: Thu Feb 18 11:21:02 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -431,8 +431,8 @@ segdata <- res
 ## Plot-level variables to separate out
 consts <- c('PID', 'CONTNAM', 'STPACE', 'ELEVCL', 'ASPCL', scols)
 
-segplots <- segall[, consts, with=FALSE]
-segplants <- segall[, c('PID', setdiff(names(segall), consts)), with=FALSE]
+segplots <- unique(segdata[, consts, with=FALSE])
+segplants <- segdata[, c('PID', setdiff(names(segdata), consts)), with=FALSE]
 
 ## If saving
 ## save(segdata, file='../temp/segdata.rda', compress='bzip2')

@@ -5,7 +5,7 @@
 \alias{segplots}
 \title{Contour segments plot-level data.}
 \format{An object of class \code{data.table} (inherits from
-  \code{data.frame}) with 23680 rows and 13 columns.
+  \code{data.frame}) with 157 rows and 13 columns.
 \itemize{
    \item PID: Plot identifier, this is determined by unique combinations of \code{CONTNAM} and \code{STPACE}.
    \item CONTNAM: Contour name
