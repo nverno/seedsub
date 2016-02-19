@@ -3,7 +3,7 @@
 ## Description: Examine the substrate data
 ## Author: Noah Peart
 ## Created: Thu Feb 18 09:42:12 2016 (-0500)
-## Last-Updated: Thu Feb 18 10:56:41 2016 (-0500)
+## Last-Updated: Thu Feb 18 23:44:30 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -48,7 +48,7 @@ segsub <- copy(submas99c)
 ##' + `QPOS`: Quadrat position ?
 ##' + Then there are a bunch of substrate types:
 ##'
-##'     - `BLA5`/`BLD5`: Bole aerial/Bole dead
+##'     - `BLA5`/`BLD5`: Bole aerial/Bole dead on the ground
 ##'     - `BSOIL`: Bare soil
 ##'     - `RCK`: Rock
 ##'     - `WATER`: water
