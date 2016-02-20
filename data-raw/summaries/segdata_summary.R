@@ -3,23 +3,16 @@
 ## Description: Summarise the segdata output from segments_clean.R
 ## Author: Noah Peart
 ## Created: Wed Feb  3 22:46:27 2016 (-0500)
-## Last-Updated: Wed Feb 10 19:19:49 2016 (-0500)
+## Last-Updated: Fri Feb 19 21:23:33 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
 ## /* yaml */
 ##' ---
 ##' title: "Some Basic Summaries for the __segdata__ Dataset"
-##' author: "Noah Peart"
-##' date: "`r Sys.Date()`"
-##' output_format: 
-##'   html_document:
-##'     theme: readable
-##'     toc: true
-##'     highlight: zenburn
 ##' ---
 ##'
-##+setup, include=FALSE, echo=FALSE, message=FALSE
+##+setup, include=FALSE
 ## /* knitr setup */
 library(knitr)
 opts_chunk$set(fig.path='figures/', cache=FALSE, echo=TRUE, message=FALSE)

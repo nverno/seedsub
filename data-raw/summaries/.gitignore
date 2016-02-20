@@ -1,0 +1,5 @@
+libs
+figures
+*.html
+
+!includes/_navbar.html

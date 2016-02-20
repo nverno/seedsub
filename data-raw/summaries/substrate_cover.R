@@ -3,23 +3,18 @@
 ##' Description: Compute percent covers for substrate data
 ##' Author: Noah Peart
 ##' Created: Thu Feb 18 10:36:36 2016 (-0500)
-##' Last-Updated: Fri Feb 19 04:15:28 2016 (-0500)
+##' Last-Updated: Fri Feb 19 21:26:09 2016 (-0500)
 ##'           By: Noah Peart
 ##' */
 
 ## /* yaml */
 ##' ---
 ##' title: "Substrate Percent Cover"
-##' output_format: 
-##'   html_document:
-##'     theme: readable
-##'     highlight: zenburn
-##'     toc: true
 ##' ---
 ##' 
-#+setup, echo=FALSE, include=FALSE
+#+setup, include=FALSE
 library(knitr)
-opts_chunk$set(fig.path='Figures/', echo=FALSE, message=FALSE, cache=FALSE)
+opts_chunk$set(fig.path='Figures/',  echo=TRUE, message=FALSE, cache=FALSE)
 
 library(data.table)
 library(stringi)
@@ -37,7 +32,7 @@ load("../temp/segdata.rda")
 ##'
 ##' # Data
 ##'
-##+raw-data
+#+raw-data
 datatable(segsub, options=dtopts, caption="Raw data")
 ## /* end raw-data */
 ##'
@@ -53,7 +48,7 @@ datatable(segsub, options=dtopts, caption="Raw data")
 ##'
 ##' The substrate types collected for seedlings varied between census years.  An overview
 ##' of the substrates/year is as follows:
-##+seed-subs, echo=FALSE
+#+seed-subs
 
 seedsubs <- segplants[!is.na(HT), 
   .(Substrates = list(na.omit(unique(SUB)))), by=YEAR][order(YEAR)]
@@ -68,7 +63,7 @@ datatable(seedsubs, caption="Substrates collected for seedlings by year")
 ##' segments are missing substrate data from those years, but may have substrate data that 
 ##' was collected in another year.
 ##'
-##+missing-substrate, echo=FALSE
+#+missing-substrate
 
 nosub <- segplots[!(PID %in% segsub[, PID]), PID]
 nosub_plts <- segplots[list(PID = nosub), .(CONTNAM, STPACE), on="PID"]
@@ -87,7 +82,7 @@ datatable(tab, options=dtopts, caption="Counts of plants in plots/years where mi
 ##'
 ##' # Substrate groupings
 ##'
-##+sub-groups
+#+sub-groups
 nonsubs <- c("PID", "CONTNAM", "STPACE", "YEAR", "SGDSP", "QPOS", "SUMA", "SUMG",
   "CORRECT", "ASPCL", "ELEVCL", "SEASON", "DATE")
 ground <- c("BLA5", "BLD5", "BSOIL", "RCK", "WATER", "WDG1", "WDG5", "MSSG", "LITT", "LITC",
@@ -112,14 +107,14 @@ ground_yr[, Substrates := lapply(Substrates, function(x) {
 ##' ## Ground substrate
 ##' 
 ##' Substrates collected on the ground by year:
-##+ground-subs
+#+ground-subs
 datatable(ground_yr, options=dtopts, caption="Ground substrates/year.")
 ## /* end ground-subs */
 ##'
 ##' ## Aerial substrate
 ##'
 ##' Aerial substrates collected by year:
-##+aerial-sub
+#+aerial-sub
 aerial_yr <- segsub[, .(Substrates = list(aerial[
   sapply(aerial, function(x) if (length(na.omit(get(x)))) TRUE else FALSE)
 ])), by=YEAR]
@@ -148,16 +143,14 @@ datatable(aerial_yr, options=dtopts, caption="Aerial substrates/year.")
 ##' the sum of the `LITC`, `LITM`, and `LITD` columns, these should be ignored when 
 ##' calculating the sums.
 ##'
-##+total-ground
+#+total-ground
 ## Total sum, combining all the litters into one
 segsub[, GSUM := rowSums(.SD, na.rm=TRUE), 
   .SDcols = setdiff(ground, c("LITC", "LITM", "LITD"))]
 
 ## Separate the litters
-for (yr in unique(ground_yr$YEAR)) {
-  segsub[YEAR==yr, GSUM2 := rowSums(.SD, na.rm=TRUE),
-    .SDcols = unlist(ground_yr[YEAR == yr, Substrates])]
-}
+segsub[ground_yr, GSUM2 := rowSums(.SD[, unlist(i.Substrates), with=FALSE],
+  na.rm=TRUE), on="YEAR", by=.EACHI]
 
 ## /* end total-ground */
 ##'
@@ -167,12 +160,13 @@ for (yr in unique(ground_yr$YEAR)) {
 ##'
 ##' Calculate percent cover for each substrate type by year.
 ##'
-##+percent-cover
+#+percent-cover
 
 res <- copy(segsub)
 
-for (yr in unique(ground_yr$YEAR)) {
-  res[YEAR == yr, ]
-}
+## First, include all ground substrates that were measured for each year
+## res[ground_yr, .SD[, unlist(i.Substrates), with=FALSE], on="YEAR", by=.EACHI]
+
 
 ## /* end percent-cover */
+##' 

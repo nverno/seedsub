@@ -3,21 +3,16 @@
 ##' Description: Summarise the extension growth data
 ##' Author: Noah Peart
 ##' Created: Tue Feb 16 23:39:01 2016 (-0500)
-##' Last-Updated: Wed Feb 17 02:59:14 2016 (-0500)
+##' Last-Updated: Fri Feb 19 22:03:59 2016 (-0500)
 ##'           By: Noah Peart
 ##' */
 
 ## /* yaml */
 ##' ---
 ##' title: "Extension Growth Summary"
-##' output_format: 
-##'   html_document:
-##'     theme: readable
-##'     highlight: zenburn
-##'     toc: true
 ##' ---
 ##' 
-##+setup, include=FALSE, message=FALSE, echo=FALSE
+#+setup, include=FALSE
 library(knitr)
 opts_chunk$set(fig.path='figures/', cache=FALSE, echo=TRUE, message=FALSE)
 
@@ -34,7 +29,7 @@ has_d3heat <- require(d3heatmap)
 dtopts <- list(scrollX=TRUE)
 ## /* end setup */
 ##'
-##+load-data
+#+load-data
 ## Loading data, extract some variables/years
 ## Stored as a by product of running the segdata creating script
 ## in "../temp/cextgr.rda" from this directory
@@ -76,12 +71,13 @@ if (!all(nms %in% unlist(allCols))) stop( 'Missed some columns.' )
 ##'
 
 ##' The goal of this script is to clean the extension growth data extracted from 
-##' __seesapmas11__ file in [cseed.R](cseed.R).  This involves mostly transforming the
-##' data into a ussable 'long' format.  The temporary dataset `cextgr.rda` should
-##' have been saved in `./temp/cextgr.rda` following execution of `cseed.R`.
+##' __seesapmas11__ file in [segdata_clean.R](../clean/segdata_clean.R).  
+##' This involves mostly transforming the data into a ussable 'long' format.  
+##' The temporary dataset `cextgr.rda` should have been saved in `./temp/cextgr.rda` 
+##' following execution of `segdata_clean.R`.
 ##'
 ##' ## Table: Head of raw data
-##+raw-table
+#+raw-table
 if (has_dt) {
   datatable(head(cextgr), options=dtopts)
 } else kable(head(cextgr))
@@ -166,7 +162,7 @@ if (has_dt) {
 ##' Below, the `ENOTE[77-89]` variables are shown as counts of each value/year 
 ##' in tabular form (summarized as heatmap - hover over cell for value).
 ##'
-##+enotes
+#+enotes
 ## Note: ENOTE99 is character, the rest are doubles
 ids <- allCols$enotes
 ids <- setdiff(ids, 'ENOTE99')
@@ -200,7 +196,7 @@ if (has_dt) {
 ##'   3. The cumulative/non-cumulative ext. growth for the plant with 
 ##' three leader changes, with vertical lines showing the events of leader changes.
 ##'
-##+enote99
+#+enote99
 ## Convert ENOTE99 to NL columns
 nlcols <- allCols$nl99s
 tst <- cextgr[!is.na(ENOTE99), c('ENOTE99', nlcols), with=FALSE]
@@ -257,7 +253,7 @@ dygraph(dt, ylab='Extension Growth', xlab='Year',
 ##' ### Terminal conditions
 ##' Tabulated values of `TERM99` and `TERM00`
 ##'
-##+term, results='as.is'
+#+term, results='as.is'
 terminal <- melt(cextgr[, .(ID, TERM99, TERM00)], measure=patterns("^TERM"),
   value.name='TERM', variable.name='YEAR')
 terminal[, YEAR := stri_extract(YEAR, regex='[0-9]+')]

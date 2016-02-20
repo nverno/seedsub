@@ -3,21 +3,16 @@
 ## Description: Examine the substrate data
 ## Author: Noah Peart
 ## Created: Thu Feb 18 09:42:12 2016 (-0500)
-## Last-Updated: Thu Feb 18 23:44:30 2016 (-0500)
+## Last-Updated: Fri Feb 19 21:24:14 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
 ## /* yaml */
 ##' ---
 ##' title: "Substrate Data"
-##' output_format: 
-##'   html_document:
-##'     theme: readable
-##'     highlight: zenburn
-##'     toc: true
 ##' ---
 ##' 
-##+setup, echo=FALSE, include=FALSE
+##+setup, include=FALSE
 library(knitr)
 opts_chunk$set(fig.path='figures/', echo=TRUE, message=FALSE, cache=FALSE)
 
