@@ -3,7 +3,7 @@
 ##' Description: Compute percent covers for substrate data
 ##' Author: Noah Peart
 ##' Created: Thu Feb 18 10:36:36 2016 (-0500)
-##' Last-Updated: Fri Feb 19 21:26:09 2016 (-0500)
+##' Last-Updated: Fri Feb 19 23:05:35 2016 (-0500)
 ##'           By: Noah Peart
 ##' */
 
@@ -162,11 +162,32 @@ segsub[ground_yr, GSUM2 := rowSums(.SD[, unlist(i.Substrates), with=FALSE],
 ##'
 #+percent-cover
 
-res <- copy(segsub)
-
 ## First, include all ground substrates that were measured for each year
 ## res[ground_yr, .SD[, unlist(i.Substrates), with=FALSE], on="YEAR", by=.EACHI]
+res <- copy(segsub)
+sums <- c("SUMG", "SUMA", "CORRECT", "GSUM", "GSUM2")
+ids <- c("PID", "CONTNAM", "STPACE", "YEAR")
+res <- res[, lapply(.SD, function(x) x / res[["GSUM2"]]), .SDcols=ground]
 
+## Percentages of each ground subtrate by `GSUM2`
+perc <- copy(segsub)
+perc[, (ground) := res[, ground, with=FALSE]]
+
+## sanity check: sums of substrates by year == 1
+stopifnot(all.equal(
+  perc[ground_yr, rowSums(.SD[, unlist(i.Substrates), with=FALSE], na.rm=TRUE),
+    on="YEAR", by=.EACHI][, V1],
+  rep(1, nrow(perc))))
+
+## They won't all be 1 with `SUMG` since it isn't all corrected
+res2 <- copy(segsub)[, lapply(.SD, function(x) x / segsub[["SUMG"]]), .SDcols=ground]
+res2[, YEAR := segsub[["YEAR"]]]
+dd <- range(res2[ground_yr, rowSums(.SD[, unlist(i.Substrates), with=FALSE], na.rm=TRUE),
+  on="YEAR", by=.EACHI][, V1])  # ~[0.95 - 1.18], not bad, and mostly ~1
+
+## Way off since `LITT` is combined litters, so year sampling schemes 
+## must by accounted for, as above
+bd <- range(perc[, rowSums(.SD[, ground, with=FALSE], na.rm=TRUE), by=YEAR][, V1])
 
 ## /* end percent-cover */
 ##' 
