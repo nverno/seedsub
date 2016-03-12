@@ -3,7 +3,7 @@
 ## Description: Cleaning contour seedling data, seesapmas11
 ## Author: Noah Peart
 ## Created: Tue Feb  2 17:07:06 2016 (-0500)
-## Last-Updated: Thu Feb 18 11:21:02 2016 (-0500)
+## Last-Updated: Sat Mar 12 00:19:51 2016 (-0500)
 ##           By: Noah Peart
 ## */
 
@@ -332,7 +332,7 @@ res <- melt(cseed[, c(ids, hts), with=FALSE],
   variable.name='YEAR')
 res[, YEAR := stri_extract(YEAR, regex='[0-9]+')]
 
-## list of varying variabls
+## All year-varying variables
 allvary <- list(sglens, stats, notes, decms, subs, subons,
   stmlens, sgdsp, tcvrs, nfcvrs, brhts, ciis)
 
@@ -351,8 +351,31 @@ for (v in allvary) {
   }
 }
 
+## Check counts
+ss <- sum(seesapmas11[, Reduce("sum", lapply(.SD, function(x) !is.na(x))),
+  .SDcols=hts])
+stopifnot(ss == sum(!is.na(res$HT)))
+ss <- sum(seesapmas11[, Reduce("sum", lapply(.SD, function(x) x != '')), 
+  .SDcols=stats])
+stopifnot(sum(!is.na(res$STAT)) == ss)
+ss <- sum(seesapmas11[, Reduce("sum", lapply(.SD, function(x) !is.na(x))),
+  .SDcols=tcvrs])
+stopifnot(sum(!is.na(res$TCVR)) == ss)
+ss <- sum(seesapmas11[, Reduce("sum", lapply(.SD, function(x) x != '')),
+  .SDcols=subs])
+stopifnot(sum(!is.na(res$SUB)) == ss)
+ss <- sum(seesapmas11[, Reduce("sum", lapply(.SD, function(x) x != '')),
+  .SDcols=subons])
+stopifnot(sum(!is.na(res$SUBON)) == ss)
+
 ## Add constants
 res <- cseed[, consts, with=FALSE][res, on=ids]
+
+## Check for 88
+## res[, length(unique(ID)), by=c("CONTNAM", "STPACE", "YEAR")]
+counts <- seesapmas11[!is.na(HT88), .N, by=c("CONTNAM", "STPACE")][,N]
+test <- res[!is.na(HT) & YEAR==88, .N, by=c("CONTNAM", "STPACE")][,N]
+stopifnot(all(counts == test))
 
 ## Add a unique plot identifier
 res[,PID := .GRP, by=c('CONTNAM', 'STPACE')]
